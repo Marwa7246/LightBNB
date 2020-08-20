@@ -35,7 +35,7 @@ const getUserWithEmail = function(email) {
   WHERE email=$1
   `, [email])
   .then(res => {
-    console.log('responseEmail: ', res.rows[0]);
+    //console.log('responseEmail: ', res.rows[0]);
     return res.rows[0]});
 }
 
@@ -56,10 +56,10 @@ const getUserWithId = function(id) {
   WHERE id=$1
   `, [id])
   .then(res => {
-    console.log('responseId: ', res.rows[0]);
+    //console.log('responseId: ', res.rows[0]);
     return res.rows[0]});
 }
-exports.getUserWithId = getUserWithId;
+ exports.getUserWithId = getUserWithId;
 
 
 /**
@@ -79,7 +79,7 @@ const addUser =  function(user) {
   INSERT INTO users (name, email, password) VALUES($1, $2, $3)  
   RETURNING *`, [user.name, user.email, user.password])
   .then(res => {
-    console.log('responseAdd: ', res.rows[0]);
+    //console.log('responseAdd: ', res.rows[0]);
     return res.rows[0]});
 } 
 
@@ -92,9 +92,29 @@ exports.addUser = addUser;
  * @param {string} guest_id The id of the user.
  * @return {Promise<[{}]>} A promise to the reservations.
  */
+// const getAllReservations = function(guest_id, limit = 10) {
+//   return getAllProperties(null, 2);
+// }
+
 const getAllReservations = function(guest_id, limit = 10) {
-  return getAllProperties(null, 2);
+
+  return pool.query(`
+  SELECT properties.*, start_date, end_date, AVG(rating) AS average_rating 
+FROM properties
+JOIN reservations ON properties.id=reservations.property_id
+JOIN property_reviews ON properties.id=property_reviews.property_id
+WHERE reservations.guest_id=$1 
+AND end_date < now()::date
+GROUP BY properties.id, reservations.id
+ORDER BY start_date
+LIMIT $2;
+  `, [guest_id, limit])
+  .then(res => {
+    //console.log('responseReservation: ', res.rows);
+    return res.rows});
 }
+
+
 exports.getAllReservations = getAllReservations;
 
 /// Properties
