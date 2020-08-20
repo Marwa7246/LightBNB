@@ -143,7 +143,7 @@ exports.getAllReservations = getAllReservations;
 
 const getAllProperties = function(options, limit = 10) {
   // 1
-  //console.log('options: ', Object.values(options));
+  console.log('options: ', options);
   //const isEmpty = !Object.values(options).some(x => (x !== ''));
   //console.log(isEmpty);
 
@@ -168,7 +168,11 @@ const getAllProperties = function(options, limit = 10) {
     if (options.city) {
       queryParams.push(`%${options.city}%`);
       queryString += `AND city LIKE $${queryParams.length} `;
-    } 
+    }
+    if (options.owner_id) {
+      queryParams.push(options.owner_id);
+      queryString += `AND owner_id = $${queryParams.length} `;
+    }  
     
   // 4
 

@@ -1,9 +1,10 @@
 module.exports = function(router, database) {
 
   router.get('/properties', (req, res) => {
-    console.log('body: ', req.query)
-    console.log('ownerId: ', req.session.userId)
-    database.getAllProperties(req.query, 20)
+    const userId = req.session.userId;
+    const totalQuery = {...req.query, owner_id: userId}
+    console.log('totalQuery: ', totalQuery)
+    database.getAllProperties(totalQuery, 20)
     .then(properties => res.send({properties}))
     .catch(e => {
       console.error(e);
