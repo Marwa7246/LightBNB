@@ -144,8 +144,8 @@ exports.getAllReservations = getAllReservations;
 const getAllProperties = function(options, limit = 10) {
   // 1
   //console.log('options: ', Object.values(options));
-  const isEmpty = !Object.values(options).some(x => (x !== ''));
-  console.log(isEmpty);
+  //const isEmpty = !Object.values(options).some(x => (x !== ''));
+  //console.log(isEmpty);
 
   const queryParams = [];
   // 2
@@ -154,27 +154,22 @@ const getAllProperties = function(options, limit = 10) {
   FROM properties
   JOIN property_reviews ON properties.id = property_id
   `;
+    queryString += ` `;
+    queryParams.push(100*options.minimum_price_per_night || 0);
+    queryString += `WHERE cost_per_night >= $${queryParams.length} `;
+      
+      
+    if (options.maximum_price_per_night) {
+      queryParams.push(100*options.maximum_price_per_night);
+      queryString += `AND cost_per_night <= $${queryParams.length} `;
+    }
 
   // 3
-  if (!isEmpty) {
-    queryString += `WHERE `
     if (options.city) {
       queryParams.push(`%${options.city}%`);
-      queryString += `city LIKE $${queryParams.length} `;
-    }
-    if (options.minimum_price_per_night) {
-      queryParams.push(100*Number(options.minimum_price_per_night));
-      queryString += `AND cost_per_night > $${queryParams.length} `;
-    }
-
-    if (options.maximum_price_per_night) {
-      queryParams.push(100*Number(options.maximum_price_per_night));
-      queryString += `AND cost_per_night < $${queryParams.length} `;
-    }
+      queryString += `AND city LIKE $${queryParams.length} `;
+    } 
     
-    
-
-  }
   // 4
 
   queryString += `
@@ -182,8 +177,8 @@ const getAllProperties = function(options, limit = 10) {
   `;
 
   if (options.minimum_rating) {
-    queryParams.push(Number(options.minimum_rating));
-    queryString += `HAVING avg(property_reviews.rating) > $${queryParams.length} `;
+    queryParams.push(options.minimum_rating);
+    queryString += `HAVING avg(property_reviews.rating) >= $${queryParams.length} `;
   }
 
   queryParams.push(limit);
